@@ -31,7 +31,9 @@ DependencyDetection.defer do
         end
 
         NewRelic::Agent::Datastores.wrap("Elasticsearch", "search", __tracepath(path), callback) do
-          perform_request_without_newrelic_trace(method, path, params, body)
+          NewRelic::Agent.disable_all_tracing do
+            perform_request_without_newrelic_trace(method, path, params, body)
+          end
         end
         result
       end
@@ -40,7 +42,7 @@ DependencyDetection.defer do
       alias_method execute_method, :perform_request_with_newrelic_trace
 
       def __tracepath(path)
-        v = path.split('/')[0]
+        v = path.split('/')[1]
         (v.nil? || v == '') ? path : v
       end
     end
